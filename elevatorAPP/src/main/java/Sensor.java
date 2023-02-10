@@ -1,3 +1,5 @@
+import java.io.PrintWriter;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,12 +13,14 @@ public class Sensor {
     public List<Integer> outElevatorRequest;
     public List<Integer> inElevatorRequestBuffer;
     public List<Integer> outElevatorRequestBuffer;
+    public PrintWriter printWriter;
+    public Clock clock;
 
-    public Sensor() {
-        this(Integer.MAX_VALUE, Integer.MAX_VALUE, 1, 0, 0);
+    public Sensor(PrintWriter printWriter, Clock clock) {
+        this(Integer.MAX_VALUE, Integer.MAX_VALUE, 1, 0, 0, printWriter, clock);
     }
 
-    public Sensor(int weightLimit, int heightLimit, int currentFloor, int currentWeight, int direction) {
+    public Sensor(int weightLimit, int heightLimit, int currentFloor, int currentWeight, int direction, PrintWriter printWriter, Clock clock) {
         this.currentFloor = currentFloor;
         this.weightLimit = weightLimit;
         this.direction = direction;
@@ -26,10 +30,8 @@ public class Sensor {
         this.outElevatorRequest = new ArrayList<Integer>();
         this.inElevatorRequestBuffer = new ArrayList<Integer>();
         this.outElevatorRequestBuffer = new ArrayList<Integer>();
-    }
-
-    public int getCurrentFloor() {
-        return currentFloor;
+        this.printWriter = printWriter;
+        this.clock = clock;
     }
 
     public int getNextFloor() {
@@ -42,9 +44,9 @@ public class Sensor {
         }
     }
 
-    public boolean reachMaximumWeight() {
-        return currentWeight >= weightLimit;
-    }
+//    public boolean reachMaximumWeight() {
+//        return currentWeight >= weightLimit;
+//    }
 
     public boolean reachMaximumHeight() {
         return currentFloor >= heightLimit;
@@ -52,12 +54,14 @@ public class Sensor {
 
     public void requestStopIn(int floor) {
         this.inElevatorRequest.add(floor);
-        System.out.println(System.currentTimeMillis() + ": in-elevator request floor: " + floor);
+        printWriter.println(clock.instant() + ": in-elevator request floor: " + floor);
+        printWriter.flush();
     }
 
     public void requestStopOut(int floor) {
         this.outElevatorRequest.add(floor);
-        System.out.println(System.currentTimeMillis() + ": out-elevator request floor: " + floor);
+        printWriter.println(clock.instant() + ": out-elevator request floor: " + floor);
+        printWriter.flush();
     }
 
     public boolean shouldStop() {
@@ -67,17 +71,17 @@ public class Sensor {
     public void stopComplete() {
         outElevatorRequest.remove(Integer.valueOf(currentFloor));
         inElevatorRequest.remove(Integer.valueOf(currentFloor));
+        printWriter.println(clock.instant() + ": stop at floor: " + currentFloor);
+        printWriter.flush();
     }
 
     public boolean shouldMove() {
         return !outElevatorRequest.isEmpty() || !inElevatorRequest.isEmpty();
     }
 
-    public boolean isStateIdle() {
-        return direction == 0;
-    }
-
     public void MoveComplete() {
+        printWriter.println(clock.instant() + ": pass floor: " + currentFloor);
+        printWriter.flush();
         currentFloor = getNextFloor();
     }
 

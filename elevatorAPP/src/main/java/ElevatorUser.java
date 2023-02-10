@@ -1,16 +1,19 @@
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+
 import static java.lang.Thread.sleep;
 
 public class ElevatorUser {
-    public static void main(String[] args) {
-        Sensor sensor = new Sensor();
+    public static void main(String[] args) throws IOException {
+        PrintWriter printWriter = new PrintWriter("elevatorLog.txt", StandardCharsets.UTF_8);
+        Sensor sensor = new Sensor(printWriter, Clock.systemDefaultZone());
         Runnable elevator = new Elevator(sensor);
         new Thread(elevator).start();
-        sensor.requestStopIn(1);
-        sensor.requestStopIn(7);
+        sensor.requestStopIn(10);
         try {
-            sleep(100000);
+            sleep(15000);
         } catch (InterruptedException e) {}
-        sensor.stopComplete();
         sensor.requestStopIn(3);
     }
 }

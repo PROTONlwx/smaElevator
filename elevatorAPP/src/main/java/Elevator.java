@@ -14,12 +14,10 @@ public class Elevator implements Runnable {
                     sleep(1000);
                 } catch (InterruptedException e) {}
                 sensor.stopComplete();
-                System.out.println(System.currentTimeMillis() + ": stop at floor: " + sensor.currentFloor);
             }
 
             sensor.cycleComplete();
             if (sensor.shouldMove()) {
-                System.out.println(System.currentTimeMillis() + ": pass floor: " + sensor.currentFloor);
                 try {
                     sleep(3000);
                 } catch (InterruptedException e) {}
