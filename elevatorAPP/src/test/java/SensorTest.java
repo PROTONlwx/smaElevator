@@ -3,7 +3,6 @@ import org.junit.jupiter.api.Test;
 import java.io.PrintWriter;
 import java.time.Clock;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class SensorTest {
