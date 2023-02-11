@@ -1,6 +1,5 @@
 import java.io.PrintWriter;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -35,6 +34,10 @@ public class Sensor {
         this.clock = clock;
     }
 
+    /**
+     * Return the next floor the elevator is moving toward
+     * @return      the next floor number the elevator is going to move toward
+     */
     public int getNextFloor() {
         if (direction == 0) {
             return currentFloor;
@@ -45,55 +48,77 @@ public class Sensor {
         }
     }
 
-//    public boolean reachMaximumWeight() {
-//        return currentWeight >= weightLimit;
-//    }
-
+    /**
+     * Decide whether the current floor reach or exceed the limit.
+     * @return      True if the limit is reached, false otherwise
+     */
     public boolean reachMaximumHeight() {
         return currentFloor >= heightLimit;
     }
 
+    /**
+     * Request from inside of the elevator to stop at a specific floor
+     */
     public void requestStopIn(int floor) {
         this.inElevatorRequestBuffer.add(floor);
         String logMsg = clock.instant() + ": in-elevator request floor: " + floor;
-//        System.out.println(logMsg);
         printWriter.println(logMsg);
         printWriter.flush();
     }
 
+    /**
+     * Request from outside of the elevator to stop at a specific floor
+     */
     public void requestStopOut(int floor) {
         this.outElevatorRequestBuffer.add(floor);
         String logMsg = clock.instant() + ": out-elevator request floor: " + floor;
-//        System.out.println(logMsg);
         printWriter.println(logMsg);
         printWriter.flush();
     }
 
+    /**
+     * Decide whether the elevator should stop at the current floor. If the current floor appears to be requested and
+     * the request is made at least one floor in advance, then the elevator should stop.
+     * @return      True if the elevator should stop, false otherwise
+     */
     public boolean shouldStop() {
         return outElevatorRequest.contains(currentFloor) || inElevatorRequest.contains(currentFloor);
     }
 
+    /**
+     * Stop is done for requested floor, so requests should be removed.
+     */
     public void stopComplete() {
         outElevatorRequest.remove(Integer.valueOf(currentFloor));
         inElevatorRequest.remove(Integer.valueOf(currentFloor));
         String logMsg = clock.instant() + ": stop at floor: " + currentFloor;
-//        System.out.println(logMsg);
         printWriter.println(logMsg);
         printWriter.flush();
     }
 
+    /**
+     * Decide whether the elevator should move toward some direction. Move is only needed when stop request is made.
+     * @return      True if the elevator should move, false otherwise
+     */
     public boolean shouldMove() {
         return !outElevatorRequest.isEmpty() || !inElevatorRequest.isEmpty();
     }
 
+    /**
+     * Stop is done for current, the elevator is taken to the next level.
+     */
     public void MoveComplete() {
         String logMsg = clock.instant() + ": pass floor: " + currentFloor;
         currentFloor = getNextFloor();
-//        System.out.println(logMsg);
         printWriter.println(logMsg);
         printWriter.flush();
     }
 
+    /**
+     * Immediately fter a stop, or immediately pass a floor that doesn't need stop, this method admit all the requests
+     * in the buffer and determine the new direction to move toward. The elevator must travel in one direction at a
+     * time until it needs to go no further.
+     */
     public void cycleComplete() {
         outElevatorRequest.addAll(outElevatorRequestBuffer);
         inElevatorRequest.addAll(inElevatorRequestBuffer);
