@@ -2,6 +2,7 @@ import java.io.PrintWriter;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Sensor {
     public int weightLimit;
@@ -26,10 +27,10 @@ public class Sensor {
         this.direction = direction;
         this.currentWeight = currentWeight;
         this.heightLimit = heightLimit;
-        this.inElevatorRequest = new ArrayList<Integer>();
-        this.outElevatorRequest = new ArrayList<Integer>();
-        this.inElevatorRequestBuffer = new ArrayList<Integer>();
-        this.outElevatorRequestBuffer = new ArrayList<Integer>();
+        this.inElevatorRequest = new CopyOnWriteArrayList<>();
+        this.outElevatorRequest = new CopyOnWriteArrayList<Integer>();
+        this.inElevatorRequestBuffer = new CopyOnWriteArrayList<Integer>();
+        this.outElevatorRequestBuffer = new CopyOnWriteArrayList<Integer>();
         this.printWriter = printWriter;
         this.clock = clock;
     }
@@ -53,14 +54,18 @@ public class Sensor {
     }
 
     public void requestStopIn(int floor) {
-        this.inElevatorRequest.add(floor);
-        printWriter.println(clock.instant() + ": in-elevator request floor: " + floor);
+        this.inElevatorRequestBuffer.add(floor);
+        String logMsg = clock.instant() + ": in-elevator request floor: " + floor;
+//        System.out.println(logMsg);
+        printWriter.println(logMsg);
         printWriter.flush();
     }
 
     public void requestStopOut(int floor) {
-        this.outElevatorRequest.add(floor);
-        printWriter.println(clock.instant() + ": out-elevator request floor: " + floor);
+        this.outElevatorRequestBuffer.add(floor);
+        String logMsg = clock.instant() + ": out-elevator request floor: " + floor;
+//        System.out.println(logMsg);
+        printWriter.println(logMsg);
         printWriter.flush();
     }
 
@@ -71,7 +76,9 @@ public class Sensor {
     public void stopComplete() {
         outElevatorRequest.remove(Integer.valueOf(currentFloor));
         inElevatorRequest.remove(Integer.valueOf(currentFloor));
-        printWriter.println(clock.instant() + ": stop at floor: " + currentFloor);
+        String logMsg = clock.instant() + ": stop at floor: " + currentFloor;
+//        System.out.println(logMsg);
+        printWriter.println(logMsg);
         printWriter.flush();
     }
 
@@ -80,9 +87,11 @@ public class Sensor {
     }
 
     public void MoveComplete() {
-        printWriter.println(clock.instant() + ": pass floor: " + currentFloor);
-        printWriter.flush();
+        String logMsg = clock.instant() + ": pass floor: " + currentFloor;
         currentFloor = getNextFloor();
+//        System.out.println(logMsg);
+        printWriter.println(logMsg);
+        printWriter.flush();
     }
 
     public void cycleComplete() {
